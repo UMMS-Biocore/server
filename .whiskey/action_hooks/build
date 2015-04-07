@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+echo Creating ga4gh config.py
+cat << EOF > /app/ga4gh/config.py
+DATA_SOURCE = "/srv/ga4gh/ga4gh-example-data"
+EOF
+
+#wget goes here
