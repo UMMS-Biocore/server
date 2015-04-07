@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+#add the current directory (/app) to requirements.txt
+#this causes mod_wsgi_docker to run setup.py
+echo "-e ." >> /app/requirements.txt
