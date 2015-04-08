@@ -1,2 +1,4 @@
 FROM grahamdumpleton/mod-wsgi-docker:python-2.7-onbuild
-CMD [ "--application-type", "module", "server.wsgi" ]
+CMD [ "--working-directory", "ga4gh", \
+			"--log-to-terminal", \
+			"ga4gh/application.wsgi" ]
