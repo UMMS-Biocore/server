@@ -6,7 +6,7 @@ RUN mkdir -p /data/
 WORKDIR /data/
 
 #wget the example data and extract
-RUN wget http://www.well.ox.ac.uk/~jk/ga4gh-example-data.tar -nv -O - | tar -x
+RUN curl http://www.well.ox.ac.uk/~jk/ga4gh-example-data.tar | tar -x
 
 WORKDIR /
 
