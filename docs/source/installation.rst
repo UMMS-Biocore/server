@@ -157,5 +157,41 @@ error log (in Apache on Debian/Ubuntu, for example, this is ``/var/log/apache2/e
 --------------------
 Deployment on Docker
 --------------------
+It is also possible to deploy the server using Docker.
 
-**TODO**
+To deploy the demo data behind mod_wsgi,
+
+.. code-block:: bash
+
+  $ docker run -itd -p 8000:80 --name ga4gh_demo afirth/ga4gh_server_apache:demo
+
+This will run the docker container in the background, and translate calls from your host environment
+port 8000 to the docker container port 80. At that point you should be able to access it like a normal website.
+
+To build an image which includes your own data, copy ./demo and edit the Dockerfile to fetch your data with curl
+or COPY the data from the local filesystem.
+
+.. code-block:: bash
+
+  $ cp -R ./demo ./my-build
+  $ cd ./my-build 
+  $ vi Dockerfile #change curl location or use COPY instead
+  $ vi config.py #set the correct name for your dataset
+  $ docker build -t my-repo/image-name .
+  $ docker run -itd -p 8000:80 --name ga4gh_srv my-repo/image-name
+
+To mount a local volume instead of fetching data (which makes the image smaller)
+remove the curl from Dockerfile, edit config.py, and build your new image
+
+.. code-block:: bash
+
+  $ cd ./my-build
+  $ perl -pi -e's/(RUN curl)/# $1/' Dockerfile
+  $ echo DATA_SOURCE = "/data/my-data-folder" > ./config.py
+  $ docker build -t my-repo/image-name .
+
+and add the -v {hostvolume:containervolume} option to docker run
+
+.. code-block:: bash
+
+  $ docker run -itd -p 8000:80 --name ga4gh_demo -v /localhost/data:/data my-repo/image-name
