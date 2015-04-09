@@ -15,4 +15,3 @@ pyyaml
 requests
 snakefood
 sphinx
-ga4gh>=0.1.0b1
