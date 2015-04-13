@@ -159,7 +159,16 @@ Deployment on Docker
 --------------------
 It is also possible to deploy the server using Docker.
 
-To deploy the demo data behind mod_wsgi,
+First, you need an environment running the docker daemon. For non-production use, we recommend [boot2docker](http://boot2docker.io/). For production use you should install docker on a stable linux distro.
+[Platform specific Docker installation instructions](https://docs.docker.com/installation/) (OS X and Windows are instructions for boot2docker)
+
+If you already have a dataset on your machine, you can download and deploy the apache server in one command: 
+
+.. code-block:: bash
+
+  $ docker run -e GA4GH_DATA_SOURCE=/data -v my/ga4gh_data/:/data:ro -itd -p 8000:80 --name ga4gh_server afirth/ga4gh_apache_server:prod
+
+If you do not have a dataset yet, you can deploy the a container which includes the demo data:
 
 .. code-block:: bash
 
@@ -167,31 +176,64 @@ To deploy the demo data behind mod_wsgi,
 
 This will run the docker container in the background, and translate calls from your host environment
 port 8000 to the docker container port 80. At that point you should be able to access it like a normal website.
-
-To build an image which includes your own data, copy ./demo and edit the Dockerfile to fetch your data with curl
-or COPY the data from the local filesystem.
-
-.. code-block:: bash
-
-  $ cp -R ./demo ./my-build
-  $ cd ./my-build 
-  $ vi Dockerfile #change curl location or use COPY instead
-  $ vi config.py #set the correct name for your dataset
-  $ docker build -t my-repo/image-name .
-  $ docker run -itd -p 8000:80 --name ga4gh_srv my-repo/image-name
-
-To mount a local volume instead of fetching data (which makes the image smaller)
-remove the curl from Dockerfile, edit config.py, and build your new image
+Running in boot2docker, you will need to forward the port from the boot2docker vm to the host.
+From a terminal on the host to forward traffic from localhost:8000 to the VM 8000 on OSX:
 
 .. code-block:: bash
 
-  $ cd ./my-build
-  $ perl -pi -e's/(RUN curl)/# $1/' Dockerfile
-  $ echo DATA_SOURCE = "/data/my-data-folder" > ./config.py
-  $ docker build -t my-repo/image-name .
+  $ VBoxManage controlvm boot2docker-vm natpf1 "ga4gh,tcp,127.0.0.1,8000,,8000"
 
-and add the -v {hostvolume:containervolume} option to docker run
+For more info see https://www.virtualbox.org/manual/ch06.html#natforward and https://github.com/CenturyLinkLabs/panamax-ui/wiki/How-To%3A-Port-Forwarding-on-VirtualBox
+
+++++++++
+Advanced
+++++++++
+
+If you want to build the images yourself, that is possible. The [afirth/ga4gh_server_apache repo](https://registry.hub.docker.com/u/afirth/ga4gh_server_apache/)
+builds automatically on new commits, so this is only needed if you want to modify the Dockerfiles
+
+Build and run for production, serving a dataset on local host located at ``/my/dataset``
 
 .. code-block:: bash
 
-  $ docker run -itd -p 8000:80 --name ga4gh_demo -v /localhost/data:/data my-repo/image-name
+ $ cd server/
+ $ docker build -t my-repo/my-image .
+ $ docker run -e GA4GH_DATA_SOURCE=/dataset -v /my/dataset:/dataset:ro -itd -p 8000:80 --name ga4gh_server my-repo/my-image
+
+Build and run the production build, with the demo dataset in the container
+(you will need to modify the FROM line in ``/deploy/variants/demo/Dockerfile`` if you want to use your image from above as the base):
+
+.. code-block:: bash
+
+ $ cd server/deploy/variants/demo
+ $ docker build -t my-repo/my-demo-image .
+ $ docker run -itd -p 8000:80 --name ga4gh_demo my-repo/my-demo-image
+
+Other Dockerfile implementations are available in the variants folder which install manually.
+
+++++++++++++++++++++++
+Troubleshooting Docker
+++++++++++++++++++++++
+
+##### DNS #####
+
+The docker daemon's DNS may be corrupted if you switch networks, especially if run in a VM.
+For boot2docker, running udhcpc on the VM usually fixes it. 
+From a terminal on the host:
+
+.. code-block:: bash
+
+  $ eval "$(boot2docker shellinit)"
+  $ boot2docker ssh
+  $	sudo udhcpc
+  (password is tcuser)
+
+##### DEBUG #####
+
+To enable DEBUG on your docker server, call docker run with ``-e GA4GH_DEBUG=True``
+
+.. code-block:: bash
+
+  $ docker run -itd -p 8000:80 --name ga4gh_demo -e GA4GH_DEBUG=True afirth/ga4gh_server_apache:demo
+
+This will set the environment variable which is read by config.py
