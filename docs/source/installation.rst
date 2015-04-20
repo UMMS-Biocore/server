@@ -196,7 +196,7 @@ This is identical to the production container, except that a copy of the demo da
 
 This will run the docker container in the background, and translate calls from your host environment
 port 8000 to the docker container port 80. At that point you should be able to access it like a normal website, albeit on port 8000.
-Running in boot2docker, you will need to forward the port from the boot2docker vm to the host.
+Running in `boot2docker <http://boot2docker.io/>`_, you will need to forward the port from the boot2docker VM to the host.
 From a terminal on the host to forward traffic from localhost:8000 to the VM 8000 on OSX:
 
 .. code-block:: bash
