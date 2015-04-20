@@ -212,6 +212,11 @@ Advanced
 If you want to build the images yourself, that is possible. The `afirth/ga4gh_server_apache repo <https://registry.hub.docker.com/u/afirth/ga4gh_server_apache/>`_
 builds automatically on new commits, so this is only needed if you want to modify the Dockerfiles, or build from a different source.
 
+The prod and demo builds are based off of `mod_wsgi-docker <https://github.com/GrahamDumpleton/mod_wsgi-docker>`_, a project from the author of mod_wsgi.
+Please reference the Dockerfiles and documentation for that project during development on these builds.
+
+**Examples**
+
 Build the code at server/ and run for production, serving a dataset on local host located at ``/my/dataset``
 
 .. code-block:: bash
