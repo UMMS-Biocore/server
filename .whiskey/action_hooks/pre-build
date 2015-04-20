@@ -2,6 +2,10 @@
 
 set -eo pipefail
 
-#add the current directory (/app) to requirements.txt
-#this causes mod_wsgi_docker to run setup.py
+# This file is a pre-build hook executed by mod_wsgi-docker
+# More info on hooks at:
+# https://github.com/GrahamDumpleton/mod_wsgi-docker/blob/master/2.7/build.sh
+
+# Add the current directory (/app) to requirements.txt
+# This causes mod_wsgi_docker to install the local directory with pip
 echo "-e ." >> /app/requirements.txt
