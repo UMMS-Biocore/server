@@ -172,6 +172,16 @@ If you already have a dataset on your machine, you can download and deploy the a
 
 Replace ``/my/ga4gh_data/`` with the path to your data.
 
+This will:
+
+* pull the automatically built image from `Dockerhub <https://registry.hub.docker.com/u/afirth/ga4gh_server_apache/>`_
+* start an apache server running mod_wsgi on container port 80
+* mount your data read-only to the docker container 
+* assign a name to the container
+* forward port 8000 to the container.
+
+For more information on docker run options, see the `run reference <https://docs.docker.com/reference/run/>`_.
+
 **Demo Dataset Inside Container**
 
 If you do not have a dataset yet, you can deploy a container which includes the demo data:
@@ -179,6 +189,8 @@ If you do not have a dataset yet, you can deploy a container which includes the 
 .. code-block:: bash
 
   $ docker run -itd -p 8000:80 --name ga4gh_demo afirth/ga4gh_server_apache:demo
+
+This is identical to the production container, except that a copy of the demo data is included and appropriate defaults are set. 
 
 **Ports**
 
