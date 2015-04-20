@@ -160,7 +160,7 @@ Deployment on Docker
 It is also possible to deploy the server using Docker.
 
 First, you need an environment running the docker daemon. For non-production use, we recommend `boot2docker <http://boot2docker.io/>`_. For production use you should install docker on a stable linux distro.
-`Platform specific Docker installation instructions <https://docs.docker.com/installation/) (OS X and Windows are instructions for boot2docker>`_
+Please reference the `platform specific Docker installation instructions <https://docs.docker.com/installation/>`_. OSX and Windows are instructions for boot2docker.
 
 **Local Dataset Mounted as Volume**
 
