@@ -9,3 +9,6 @@ set -eo pipefail
 # Add the current directory (/app) to requirements.txt
 # This causes mod_wsgi_docker to install the local directory with pip
 echo "-e ." >> /app/requirements.txt
+
+# Copy application.wsgi into the location mod-wsgi_docker expects it
+cp /app/deploy/application.wsgi /app/ga4gh/
