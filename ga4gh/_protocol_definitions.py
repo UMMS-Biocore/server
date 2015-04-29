@@ -312,6 +312,51 @@ null, "doc": "", "type": ["null", "string"], "name": "name"}, {"doc":
         self.variantSetIds = []
 
 
+class Characterization(ProtocolElement):
+    """
+Read characterization data.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"Characterization", "fields": [{"doc": "", "type": "string", "name":
+"analysisId"}, {"doc": "", "type": "float", "name": "complexity"},
+{"doc": "", "type": "float", "name": "fractionMapped"}, {"doc": "",
+"type": "float", "name": "intronicFraction"}, {"doc": "", "type":
+"float", "name": "exonicFraction"}, {"doc": "", "type": "float",
+"name": "intergenicFraction"}], "doc": ""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([
+        "analysisId",
+        "complexity",
+        "exonicFraction",
+        "fractionMapped",
+        "intergenicFraction",
+        "intronicFraction",
+    ])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['analysisId', 'complexity', 'exonicFraction', 'fractionMapped',
+                 'intergenicFraction', 'intronicFraction']
+
+    def __init__(self):
+        self.analysisId = None
+        self.complexity = None
+        self.exonicFraction = None
+        self.fractionMapped = None
+        self.intergenicFraction = None
+        self.intronicFraction = None
+
+
 class CigarOperation(object):
     """
 An enum for the different types of CIGAR alignment operations that exist.
@@ -691,6 +736,109 @@ A general exception type.
     def __init__(self):
         self.errorCode = -1
         self.message = None
+
+
+class ExpressionLevel(ProtocolElement):
+    """
+The actual FPKM data for each feature.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"ExpressionLevel", "fields": [{"doc": "", "type": "string", "name":
+"id"}, {"doc": "", "type": "string", "name": "featureGroupId"},
+{"doc": "", "type": "string", "name": "annotationId"}, {"doc": "",
+"type": "float", "name": "rawReadCount"}, {"default": null, "doc": "",
+"type": ["null", "float"], "name": "expression"}, {"default": false,
+"doc": "", "type": ["null", "boolean"], "name": "isNormalized"},
+{"default": null, "doc": "", "type": ["null", {"symbols": ["FPKM",
+"RPM"], "doc": "", "type": "enum", "name": "ExpressionUnits"}],
+"name": "units"}, {"default": null, "doc": "", "type": ["null",
+"float"], "name": "score"}], "doc": ""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([
+        "annotationId",
+        "featureGroupId",
+        "id",
+        "rawReadCount",
+    ])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['annotationId', 'expression', 'featureGroupId', 'id',
+                 'isNormalized', 'rawReadCount', 'score',
+                 'units']
+
+    def __init__(self):
+        self.annotationId = None
+        self.expression = None
+        self.featureGroupId = None
+        self.id = None
+        self.isNormalized = False
+        self.rawReadCount = None
+        self.score = None
+        self.units = None
+
+
+class ExpressionUnits(object):
+    """
+Units for expression level
+    """
+    FPKM = "FPKM"
+    RPM = "RPM"
+
+
+class FeatureGroup(ProtocolElement):
+    """
+Identifying information for annotated features.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name": "FeatureGroup",
+"fields": [{"doc": "", "type": "string", "name": "id"}, {"doc": "",
+"type": "string", "name": "analysisId"}, {"default": null, "doc": "",
+"type": ["null", "string"], "name": "name"}, {"default": null, "doc":
+"", "type": ["null", "string"], "name": "description"}, {"default":
+null, "doc": "", "type": ["null", "long"], "name": "created"},
+{"default": null, "doc": "", "type": ["null", "long"], "name":
+"updated"}, {"default": {}, "doc": "", "type": {"values": {"items":
+"string", "type": "array"}, "type": "map"}, "name": "info"}], "doc":
+""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([
+        "analysisId",
+        "id",
+    ])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['analysisId', 'created', 'description', 'id', 'info', 'name',
+                 'updated']
+
+    def __init__(self):
+        self.analysisId = None
+        self.created = None
+        self.description = None
+        self.id = None
+        self.info = {}
+        self.name = None
+        self.updated = None
 
 
 class GeneticSex(object):
@@ -1542,6 +1690,49 @@ The response to the Beacon query
         self.frequencies = []
         self.info = None
         self.observed = None
+
+
+class RnaQuantification(ProtocolElement):
+    """
+Top level identifying information
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"RnaQuantification", "fields": [{"doc": "", "type": "string", "name":
+"id"}, {"default": null, "doc": "", "type": ["null", "string"],
+"name": "name"}, {"default": null, "doc": "", "type": ["null",
+"string"], "name": "description"}, {"doc": "", "type": "string",
+"name": "readGroupId"}, {"default": [], "doc": "", "type": {"items":
+"string", "type": "array"}, "name": "programIds"}, {"default": [],
+"doc": "", "type": {"items": "string", "type": "array"}, "name":
+"annotationIds"}], "doc": ""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([
+        "id",
+        "readGroupId",
+    ])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['annotationIds', 'description', 'id', 'name', 'programIds',
+                 'readGroupId']
+
+    def __init__(self):
+        self.annotationIds = []
+        self.description = None
+        self.id = None
+        self.name = None
+        self.programIds = []
+        self.readGroupId = None
 
 
 class Sample(ProtocolElement):
@@ -2910,6 +3101,215 @@ This metadata represents VCF header information.
         self.type = None
         self.value = None
 
+
+class ReadCounts(ProtocolElement):
+    """
+Details of the read counts.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name": "ReadCounts",
+"fields": [{"doc": "", "type": "string", "name": "analysisId"},
+{"doc": "", "type": "int", "name": "totalReadCount"}, {"doc": "",
+"type": "int", "name": "uniqueCount"}, {"doc": "", "type": "int",
+"name": "multiCount"}, {"doc": "", "type": "int", "name":
+"uniqueSpliceCount"}, {"doc": "", "type": "int", "name":
+"multiSpliceCount"}], "doc": ""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([
+        "analysisId",
+        "multiCount",
+        "multiSpliceCount",
+        "totalReadCount",
+        "uniqueCount",
+        "uniqueSpliceCount",
+    ])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['analysisId', 'multiCount', 'multiSpliceCount',
+                 'totalReadCount', 'uniqueCount',
+                 'uniqueSpliceCount']
+
+    def __init__(self):
+        self.analysisId = None
+        self.multiCount = None
+        self.multiSpliceCount = None
+        self.totalReadCount = None
+        self.uniqueCount = None
+        self.uniqueSpliceCount = None
+
+
+class SearchExpressionLevelRequest(SearchRequest):
+    """
+This request maps to the body of 'POST /expressionlevel/search'
+as JSON.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"SearchExpressionLevelRequest", "fields": [{"default": null, "doc":
+"", "type": ["null", "string"], "name": "expressionLevelId"},
+{"default": null, "doc": "", "type": ["null", "string"], "name":
+"featureGroupId"}, {"default": null, "doc": "", "type": ["null",
+"string"], "name": "rnaQuantificationId"}, {"default": null, "doc":
+"", "type": ["null", "int"], "name": "pageSize"}, {"default": null,
+"doc": "", "type": ["null", "string"], "name": "pageToken"}], "doc":
+""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['expressionLevelId', 'featureGroupId', 'pageSize', 'pageToken',
+                 'rnaQuantificationId']
+
+    def __init__(self):
+        self.expressionLevelId = None
+        self.featureGroupId = None
+        self.pageSize = None
+        self.pageToken = None
+        self.rnaQuantificationId = None
+
+
+class SearchExpressionLevelResponse(SearchResponse):
+    """
+This is the response from 'POST /expressionlevel/search' expressed as JSON.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"SearchExpressionLevelResponse", "fields": [{"default": [], "doc": "",
+"type": {"items": {"doc": "", "type": "record", "name":
+"ExpressionLevel", "fields": [{"doc": "", "type": "string", "name":
+"id"}, {"doc": "", "type": "string", "name": "featureGroupId"},
+{"doc": "", "type": "string", "name": "annotationId"}, {"doc": "",
+"type": "float", "name": "rawReadCount"}, {"default": null, "doc": "",
+"type": ["null", "float"], "name": "expression"}, {"default": false,
+"doc": "", "type": ["null", "boolean"], "name": "isNormalized"},
+{"default": null, "doc": "", "type": ["null", {"symbols": ["FPKM",
+"RPM"], "doc": "", "type": "enum", "name": "ExpressionUnits"}],
+"name": "units"}, {"default": null, "doc": "", "type": ["null",
+"float"], "name": "score"}]}, "type": "array"}, "name":
+"expressionLevel"}, {"default": null, "doc": "", "type": ["null",
+"string"], "name": "nextPageToken"}], "doc": ""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([])
+    _valueListName = "expressionLevel"
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {
+            'expressionLevel': ExpressionLevel,
+        }
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {
+            'expressionLevel': ExpressionLevel,
+        }
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['expressionLevel', 'nextPageToken']
+
+    def __init__(self):
+        self.expressionLevel = []
+        self.nextPageToken = None
+
+
+class SearchRnaQuantificationRequest(SearchRequest):
+    """
+This request maps to the body of 'POST /rnaquantification/search'
+as JSON.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"SearchRnaQuantificationRequest", "fields": [{"default": null,
+"doc": "", "type": ["null", "string"], "name": "rnaQuantificationId"},
+{"default": null, "doc": "", "type": ["null", "int"], "name":
+"pageSize"}, {"default": null, "doc": "", "type": ["null", "string"],
+"name": "pageToken"}], "doc": ""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([])
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {}
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['rnaQuantificationId', 'pageSize', 'pageToken']
+
+    def __init__(self):
+        self.rnaQuantificationId = None
+        self.pageSize = None
+        self.pageToken = None
+
+
+class SearchRnaQuantificationResponse(SearchResponse):
+    """
+This is the response from 'POST /rnaquantification/search' expressed as JSON.
+    """
+    _schemaSource = """
+{"namespace": "org.ga4gh", "type": "record", "name":
+"SearchRnaQuantificationResponse", "fields": [{"default": [],
+"doc": "", "type": {"items": {"doc": "", "type": "record", "name":
+"RnaQuantification", "fields": [{"doc": "", "type": "string",
+"name": "id"}, {"default": null, "doc": "", "type": ["null",
+"string"], "name": "name"}, {"default": null, "doc": "", "type":
+["null", "string"], "name": "description"}, {"doc": "", "type":
+"string", "name": "readGroupId"}, {"default": [], "doc": "", "type":
+{"items": "string", "type": "array"}, "name": "annotationIds"}]},
+"type": "array"}, "name": "rnaQuantification"}, {"default": null,
+"doc": "", "type": ["null", "string"], "name": "nextPageToken"}], "doc":
+""}
+"""
+    schema = avro.schema.parse(_schemaSource)
+    requiredFields = set([])
+    _valueListName = "rnaQuantification"
+
+    @classmethod
+    def isEmbeddedType(cls, fieldName):
+        embeddedTypes = {
+            'rnaQuantification': RnaQuantification,
+        }
+        return fieldName in embeddedTypes
+
+    @classmethod
+    def getEmbeddedType(cls, fieldName):
+        embeddedTypes = {
+            'rnaQuantification': RnaQuantification,
+        }
+        return embeddedTypes[fieldName]
+
+    __slots__ = ['rnaQuantification', 'nextPageToken']
+
+    def __init__(self):
+        self.rnaQuantification = []
+        self.nextPageToken = None
+
 postMethods = \
     [('/analyses/search',
       SearchAnalysesRequest,
@@ -2946,4 +3346,10 @@ postMethods = \
       SearchVariantsResponse),
      ('/variantsets/search',
       SearchVariantSetsRequest,
-      SearchVariantSetsResponse)]
+      SearchVariantSetsResponse),
+      ('/expressionlevel/search',
+      SearchExpressionLevelRequest,
+      SearchExpressionLevelResponse),
+     ('/rnaquantification/search',
+      SearchRnaQuantificationRequest,
+      SearchRnaQuantificationResponse)]

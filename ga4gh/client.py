@@ -252,3 +252,20 @@ class HttpClient(object):
         """
         return self.runSearchRequest(
             protocolRequest, "reads", protocol.SearchReadsResponse)
+
+    def searchRnaQuantification(self, protocolRequest):
+        """
+        Returns an iterator over the RnaQuantification objects from the server
+        """
+        return self.runSearchRequest(
+            protocolRequest, "rnaquantification",
+            protocol.SearchRnaQuantificationResponse)
+
+    def searchExpressionLevel(self, protocolRequest):
+        """
+        Returns an iterator over the ExpressionLevel objects from the server
+        """
+        return self.runSearchRequest(
+            protocolRequest, "expressionlevel",
+            protocol.SearchExpressionLevelResponse)
+

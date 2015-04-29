@@ -15,6 +15,7 @@ import ga4gh.datamodel.references as references
 import ga4gh.datamodel.reads as reads
 import ga4gh.exceptions as exceptions
 import ga4gh.datamodel.variants as variants
+import ga4gh.datamodel.rna_quantification as rna_quantification
 
 
 def _parsePageToken(pageToken, numValues):
@@ -192,6 +193,8 @@ class AbstractBackend(object):
         self._readGroupSetIds = []
         self._readGroupIds = []
         self._readGroupIdMap = {}
+        self._rnaQuantificationIdMap = {}
+        self._rnaQuantificationIds = []
         self._requestValidation = False
         self._responseValidation = False
         self._defaultPageSize = 100
@@ -314,6 +317,26 @@ class AbstractBackend(object):
             protocol.SearchCallSetsResponse,
             self.callSetsGenerator)
 
+    def searchRnaQuantification(self, request):
+        """
+        Returns a SearchRnaQuantificationResponse for the specified
+        SearchRnaQuantificationRequest object.
+        """
+        return self.runSearchRequest(
+            request, protocol.SearchRnaQuantificationRequest,
+            protocol.SearchRnaQuantificationResponse,
+            self.rnaQuantificationGenerator)
+
+    def searchExpressionLevel(self, request):
+        """
+        Returns a SearchExpressionLevelResponse for the specified
+        SearchExpressionLevelRequest object.
+        """
+        return self.runSearchRequest(
+            request, protocol.SearchExpressionLevelRequest,
+            protocol.SearchExpressionLevelResponse,
+            self.expressionLevelGenerator)
+
     # Iterators over the data hieararchy
 
     def _topLevelObjectGenerator(self, request, idMap, idList):
@@ -387,6 +410,69 @@ class AbstractBackend(object):
         return self._topLevelObjectGenerator(
             request, variantSet.getCallSetIdMap(),
             variantSet.getCallSetIds())
+
+    def rnaQuantificationGenerator(self, request):
+        """
+        Returns a generator over the (rnaQuantification, nextPageToken) pairs defined
+        by the specified request.
+        """
+        rnaQuantificationId = request.rnaQuantificationId
+        try:
+            rnaQuant = self._rnaQuantificationIdMap[rnaQuantificationId]
+        except KeyError:
+            raise exceptions.RnaQuantificationNotFoundException(rnaQuantificationId)
+        currentIndex = 0
+        if request.pageToken is not None:
+            currentIndex, = _parsePageToken(request.pageToken, 1)
+        rnaQuantIterator = rnaQuant.getRnaQuantification(rnaQuantificationId)
+        rnaQuantData = next(rnaQuantIterator, None)
+        while rnaQuantData is not None:
+            nextRnaQuantData = next(rnaQuantIterator, None)
+            nextPageToken = None
+            if nextRnaQuantData is not None:
+                currentIndex += 1
+                nextPageToken = "{}".format(currentIndex)
+            rnaQuantification = protocol.RnaQuantification()
+            rnaQuantification.annotationIds = rnaQuantData.annotationIds
+            rnaQuantification.description = rnaQuantData.description
+            rnaQuantification.id = rnaQuantData.id
+            rnaQuantification.name = rnaQuantData.name
+            rnaQuantification.readGroupId = rnaQuantData.readGroupId
+            yield rnaQuantification, nextPageToken
+            rnaQuantData = nextRnaQuantData
+
+    def expressionLevelGenerator(self, request):
+        expressionLevelId = request.expressionLevelId
+        featureGroupId = request.featureGroupId
+        rnaQuantificationId = request.rnaQuantificationId
+        currentIndex = 0
+        if request.pageToken is not None:
+            currentIndex, = _parsePageToken(request.pageToken, 1)
+        if rnaQuantificationId is not None:
+            rnaQuantificationIds = [rnaQuantificationId]
+        else:
+            rnaQuantificationIds = self._rnaQuantificationIds
+        for rnaQuantId in rnaQuantificationIds:
+            rnaQuant = self._rnaQuantificationIdMap[rnaQuantId]
+            expressionLevelIterator = rnaQuant.getExpressionLevel(expressionLevelId, featureGroupId)
+            expressionLevelData = next(expressionLevelIterator, None)
+            while expressionLevelData is not None and currentIndex < self._defaultPageSize:
+                nextExpressionLevelData = next(expressionLevelIterator, None)
+                nextPageToken = None
+                if nextExpressionLevelData is not None:
+                    currentIndex += 1
+                    nextPageToken = "{}".format(currentIndex)
+                expressionLevel = protocol.ExpressionLevel()
+                expressionLevel.annotationId = expressionLevelData.annotationId
+                expressionLevel.expression = expressionLevelData.expression
+                expressionLevel.featureGroupId = expressionLevelData.featureGroupId
+                expressionLevel.id = expressionLevelData.id
+                expressionLevel.isNormalized = expressionLevelData.isNormalized
+                expressionLevel.rawReadCount = expressionLevelData.rawReadCount
+                expressionLevel.score = expressionLevelData.score
+                expressionLevel.units = expressionLevelData.units
+                yield expressionLevel, nextPageToken
+                expressionLevelData = nextExpressionLevelData
 
     def startProfile(self):
         """
@@ -522,3 +608,14 @@ class FileSystemBackend(AbstractBackend):
                     self._readGroupIdMap[readGroup.getId()] = readGroup
         self._readGroupSetIds = sorted(self._readGroupSetIdMap.keys())
         self._readGroupIds = sorted(self._readGroupIdMap.keys())
+
+        #Rna Quantification
+        rnaQuantDir = os.path.join(self._dataDir, "rnaQuant")
+        for rnaQuantId in os.listdir(rnaQuantDir):
+            relativePath = os.path.join(rnaQuantDir, rnaQuantId)
+            if os.path.isdir(relativePath):
+                rnaQuantification = rna_quantification.RNASeqResult(
+                    rnaQuantId, relativePath)
+                self._rnaQuantificationIdMap[rnaQuantId] = rnaQuantification
+        self._rnaQuantificationIds = sorted(self._rnaQuantificationIdMap.keys())
+

@@ -168,6 +168,12 @@ class ReadGroupNotFoundException(ObjectNotFoundException):
         self.message = "readGroupId '{}' not found".format(readGroupId)
 
 
+class RnaQuantificationNotFound(NotFoundException):
+    def __init__(self, rnaQuantificationId):
+        self.message = "The requested RnaQuantification '{}' was not found".format(
+            rnaQuantificationId)
+
+
 class UnsupportedMediaTypeException(RuntimeException):
     httpStatus = 415
     message = "Unsupported media type"
